@@ -17,7 +17,7 @@ from collections.abc import Sequence
 
 from membership_rag.conversation import ConversationTurn, normalise_history
 
-_VERSION = 1
+_VERSION = 2
 _MAX_TOKEN_LENGTH = 160_000
 _MAX_AGE_SECONDS = 24 * 60 * 60
 
@@ -38,6 +38,7 @@ def sign_state(
     turns: Sequence[ConversationTurn],
     secret: bytes,
     *,
+    scope: str = "public",
     now: int | None = None,
 ) -> str:
     """Sign recent dialogue for storage in the current browser page."""
@@ -47,6 +48,7 @@ def sign_state(
     payload = json.dumps(
         {
             "v": _VERSION,
+            "scope": scope,
             "iat": int(time.time()) if now is None else now,
             "turns": [
                 {"role": turn.role, "content": turn.content}
@@ -67,6 +69,7 @@ def verify_state(
     token: object,
     secret: bytes,
     *,
+    scope: str = "public",
     now: int | None = None,
 ) -> tuple[ConversationTurn, ...]:
     """Verify a state before any prior assistant text reaches the model."""
@@ -85,6 +88,7 @@ def verify_state(
         current_time = int(time.time()) if now is None else now
         if (
             data.get("v") != _VERSION
+            or data.get("scope") != scope
             or not isinstance(timestamp, int)
             or isinstance(timestamp, bool)
             or timestamp > current_time + 60

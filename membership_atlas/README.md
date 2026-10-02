@@ -103,8 +103,10 @@ classes, duplicates, and empty chunks.
 The production boundary is `BedrockRetriever` in
 `membership_rag.bedrock.retrieval`.
 
-1. The backend supplies the caller's allowed access classes. Never accept these
-   values directly from a browser or user prompt.
+1. The backend derives allowed access classes from API Gateway's verified
+   Cognito claims. Guests and ordinary accounts receive `public`; members of
+   the Cognito `members` group also receive `member_restricted`. Never accept
+   access classes directly from a browser or user prompt.
 2. Deterministic query checks block permission-bypass, secret, and private
    contact requests before an AWS call.
 3. The access-class filter is mandatory on every Bedrock request.

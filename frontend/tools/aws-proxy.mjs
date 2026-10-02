@@ -24,7 +24,7 @@ const REGION = process.env.AWS_REGION ?? 'ap-southeast-2';
 const UPSTREAM_HOST =
   process.env.MEMBERSHIP_RAG_HOST ?? 'may54zk1a5.execute-api.ap-southeast-2.amazonaws.com';
 const SERVICE = 'execute-api';
-const AUTH_MODE = (process.env.CHAT_AUTH_MODE ?? 'iam').toLowerCase();
+const AUTH_MODE = (process.env.CHAT_AUTH_MODE ?? 'cognito').toLowerCase();
 const MAX_BODY_BYTES = 64 * 1024;
 
 if (!['iam', 'cognito'].includes(AUTH_MODE)) {
@@ -121,13 +121,13 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (path !== '/chat') {
+  if (path !== '/chat' && path !== '/public-chat') {
     send(res, 404, { error: 'not_found', message: `No route for ${path}` });
     return;
   }
 
   if (req.method !== 'POST') {
-    send(res, 405, { error: 'method_not_allowed', message: 'Use POST /chat.' });
+    send(res, 405, { error: 'method_not_allowed', message: 'Use POST.' });
     return;
   }
 
@@ -136,7 +136,14 @@ const server = createServer(async (req, res) => {
     const body = await readBody(req);
     let upstreamRequest;
 
-    if (AUTH_MODE === 'cognito') {
+    if (path === '/public-chat') {
+      upstreamRequest = {
+        host: UPSTREAM_HOST,
+        path,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      };
+    } else if (AUTH_MODE === 'cognito') {
       const authorization = req.headers.authorization;
       if (typeof authorization !== 'string' || !authorization.startsWith('Bearer ')) {
         status = 401;
@@ -145,7 +152,7 @@ const server = createServer(async (req, res) => {
       }
       upstreamRequest = {
         host: UPSTREAM_HOST,
-        path: '/chat',
+        path,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

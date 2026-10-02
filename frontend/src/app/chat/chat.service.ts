@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom, timeout } from 'rxjs';
 
 import { environment } from '../../environments/environment';
+import { AuthService } from '../auth/auth.service';
 import {
   ChatErrorResponse,
   ChatRequest,
@@ -48,10 +49,12 @@ const nextId = () => `m${++messageCounter}`;
 @Injectable({ providedIn: 'root' })
 export class ChatService {
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
 
   private readonly _messages = signal<UiMessage[]>([this.greeting()]);
   private readonly _isSending = signal(false);
   private conversationState: string | null = null;
+  private accessMode: 'public' | 'member' = this.auth.accessToken() ? 'member' : 'public';
 
   readonly messages = this._messages.asReadonly();
   readonly isSending = this._isSending.asReadonly();
@@ -66,12 +69,17 @@ export class ChatService {
     if (this._isSending()) return;
     messageCounter = 0;
     this.conversationState = null;
+    this.accessMode = this.auth.accessToken() ? 'member' : 'public';
     this._messages.set([this.greeting()]);
   }
 
   async send(text: string): Promise<void> {
     const query = text.trim();
     if (!query || this._isSending()) return;
+
+    const accessMode = this.auth.accessToken() ? 'member' : 'public';
+    if (accessMode !== this.accessMode) this.reset();
+    const url = accessMode === 'member' ? environment.chatApiUrl : environment.publicChatApiUrl;
 
     this._isSending.set(true);
     const placeholderId = nextId();
@@ -96,7 +104,7 @@ export class ChatService {
 
       const data = await firstValueFrom(
         this.http
-          .post<ChatResponse>(environment.chatApiUrl, body)
+          .post<ChatResponse>(url, body)
           .pipe(timeout(environment.requestTimeoutMs)),
       );
 
@@ -160,12 +168,11 @@ export class ChatService {
         return "I couldn't reach the Membership Atlas API. Check your connection and try again.";
       }
       if (error.status === 403 && !error.error?.error) {
-        // API Gateway rejected the signature rather than the Lambda rejecting the question.
-        return 'The request was not authorised. Make sure the local signing proxy is running (`npm start`).';
+        return 'Your sign-in is not authorised for this request. Please sign in again.';
       }
       const code = (error.error as ChatErrorResponse | null)?.error ?? '';
       if (error.status === 502 && !code) {
-        return 'The local chat connection is not running. In the frontend folder, run `npm start`, then try again.';
+        return 'The chat service is temporarily unavailable. Please try again.';
       }
       return ERROR_TEXT[code] ?? `Something went wrong (${error.status}). Please try again.`;
     }

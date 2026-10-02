@@ -8,6 +8,11 @@ from membership_rag.bedrock.routing import TurnRoute
 from membership_rag.conversation import contextual_query
 from membership_rag.lambda_handler import _authenticated_corpus_access, handler
 from membership_rag.scope import is_simple_utility
+from membership_rag.session_state import (
+    InvalidConversationState,
+    sign_state,
+    verify_state,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -23,12 +28,29 @@ def fake_semantic_router(monkeypatch) -> None:
     monkeypatch.setattr(lambda_handler, "_get_router", lambda: FakeRouter())
 
 
-def test_authenticated_users_can_search_the_complete_corpus() -> None:
-    assert _authenticated_corpus_access() == (
-        "public",
-        "member_restricted",
-        "configuration",
+def test_access_classes_follow_verified_gateway_group_claims() -> None:
+    member = {
+        "requestContext": {
+            "authorizer": {
+                "jwt": {"claims": {"sub": "member-1", "cognito:groups": "[members]"}}
+            }
+        }
+    }
+    assert _authenticated_corpus_access({}, "/chat") == ("public",)
+    assert _authenticated_corpus_access(member, "/public-chat") == ("public",)
+    assert _authenticated_corpus_access(member, "/chat") == (
+        "public", "member_restricted"
     )
+    assert _authenticated_corpus_access(
+        {"body": json.dumps({"cognito:groups": "members"})}, "/chat"
+    ) == ("public",)
+
+
+def test_member_conversation_state_cannot_be_replayed_as_public() -> None:
+    secret = b"s" * 32
+    state = sign_state((), secret, scope="member:member-1", now=100)
+    with pytest.raises(InvalidConversationState):
+        verify_state(state, secret, scope="public", now=100)
 
 
 def test_named_membership_request_is_refused_before_retrieval() -> None:

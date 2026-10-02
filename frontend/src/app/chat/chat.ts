@@ -103,6 +103,12 @@ export class Chat {
 
   protected signOut(): void {
     this.auth.signOut();
+    this.chat.reset();
+    void this.router.navigateByUrl('/');
+  }
+
+  protected signIn(): void {
+    this.chat.reset();
     void this.router.navigateByUrl('/login');
   }
 

@@ -44,52 +44,26 @@ Self-service registration is public: anyone who can reach the app and knows the
 app-client ID can create a user in the pool. Review that access model before
 deploying it beyond testing.
 
-The currently documented Membership API route uses `AWS_IAM`. In that mode,
-`npm start` continues to sign upstream requests with your local AWS credentials;
-the Cognito login is a client-side gate until the API Gateway route is changed
-to use the Cognito authorizer. After that change, start the proxy in bearer-token
-forwarding mode:
+API Gateway validates Cognito access tokens on `POST /chat`. New accounts can
+search public content. Membership in the Cognito `members` group grants access
+to member-restricted content. Guests use `POST /public-chat` for public content.
 
-```powershell
-$env:CHAT_AUTH_MODE = 'cognito'
-npm start
-```
-
-API Gateway must validate tokens from the same user pool and app client. If it
-is a REST API Cognito authorizer, confirm whether the method expects an access
-token with OAuth scopes or an ID token before deployment; this frontend ports
-the branch's existing access-token behaviour.
-
-`npm start` starts the signer on port 4300 and Angular on port 4200. It also
-works if an Oriana Angular page is already running: it starts whichever service
-is missing. Opening the page with `ng serve` alone leaves the signer offline and
-chat requests fail with 502. You need working AWS credentials (`aws login` or
-`aws sso login` for your profile), or the signer returns
-`401 credentials_unavailable` and the UI explains the next step.
+`npm start` starts the local API proxy on port 4300 and Angular on port 4200.
+Opening the page with `ng serve` alone leaves the proxy offline. The proxy
+forwards bearer tokens for signed-in chat and sends public chat without a token.
 
 ## Why there is a proxy
 
-`POST /chat` is currently protected with **AWS_IAM**, so every request must be
-SigV4-signed. A browser cannot safely hold those credentials, so the default
-development mode signs on your machine:
+The frontend uses same-origin API paths in development and production:
 
 ```
-browser ──POST /api/chat──▶ ng serve proxy ──▶ tools/aws-proxy.mjs
-                                                      │ SigV4 (your AWS creds)
-                                                      ▼
-                          may54zk1a5.execute-api.ap-southeast-2.amazonaws.com/chat
+browser ──POST /api/chat────────▶ local proxy or Vercel rewrite ──▶ API Gateway /chat
+        └─POST /api/public-chat─▶ local proxy or Vercel rewrite ──▶ API Gateway /public-chat
 ```
 
-The app only ever calls the same-origin `/api/chat`, so there is no CORS in play
-at all. `aws4` and `@aws-sdk/credential-providers` are **devDependencies** —
-nothing about signing ships to the browser.
-
-For Cognito-authorized development, the same proxy forwards the browser's bearer
-token when `CHAT_AUTH_MODE=cognito`. Production can call a Cognito-protected API
-Gateway endpoint directly when CORS allows the deployed origin, or use a
-same-origin reverse proxy. The alternative is making the route public — but the handler grants every
-caller all three access classes (`public`, `member_restricted`, `configuration`),
-so that would expose the whole corpus.
+Vercel's production rewrites are in `vercel.json`. They forward the
+Authorization header for the protected route. API Gateway also allows the
+production Vercel origin for direct browser API calls.
 
 ## Backend contract
 

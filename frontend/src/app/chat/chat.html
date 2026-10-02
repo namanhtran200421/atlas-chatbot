@@ -10,11 +10,15 @@
       <img src="atlas-logo.svg" alt="Cultural Infusion Atlas" />
     </a>
     <div class="header-actions">
-      <span class="account-email" [title]="auth.email()">{{ auth.email() }}</span>
+      <span class="account-email" [title]="auth.email()">{{ auth.email() || 'Public access' }}</span>
       <button type="button" class="new-chat" (click)="newChat()" [disabled]="chat.isSending()">
         New chat 
       </button>
-      <button type="button" class="sign-out" (click)="signOut()">Sign out</button>
+      @if (auth.isAuthenticated()) {
+        <button type="button" class="sign-out" (click)="signOut()">Sign out</button>
+      } @else {
+        <button type="button" class="sign-out" (click)="signIn()">Sign in</button>
+      }
     </div>
   </header>
 

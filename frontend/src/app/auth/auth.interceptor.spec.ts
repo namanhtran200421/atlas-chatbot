@@ -39,4 +39,12 @@ describe('authInterceptor', () => {
     expect(request.request.headers.get('Authorization')).toBe('Bearer access-token');
     request.flush({ answer: 'Hello' });
   });
+
+  it('does not attach a token to public chat requests', () => {
+    const client = TestBed.inject(HttpClient);
+    client.post(environment.publicChatApiUrl, { query: 'Hello' }).subscribe();
+    const request = http.expectOne(environment.publicChatApiUrl);
+    expect(request.request.headers.has('Authorization')).toBe(false);
+    request.flush({ answer: 'Hello' });
+  });
 });

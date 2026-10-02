@@ -10,15 +10,15 @@ import { AuthService } from './auth.service';
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  const isChatRequest = request.url === environment.chatApiUrl;
-  const token = isChatRequest ? auth.accessToken() : null;
+  const isProtectedChat = request.url === environment.chatApiUrl;
+  const token = isProtectedChat ? auth.accessToken() : null;
   const authenticatedRequest = token
     ? request.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
     : request;
 
   return next(authenticatedRequest).pipe(
     catchError((error: unknown) => {
-      if (isRejectedSession(error)) {
+      if (isProtectedChat && isRejectedSession(error)) {
         auth.signOut();
         void router.navigate(['/login'], { queryParams: { reason: 'session-expired' } });
       }

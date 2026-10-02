@@ -7,10 +7,9 @@ Required environment variables:
 * ``MEMBERSHIP_RAG_KB_ID``: Amazon Bedrock Knowledge Base ID.
 * ``AWS_REGION`` or ``MEMBERSHIP_RAG_REGION``: AWS region for Bedrock.
 
-Authorization is enforced before Lambda by the API Gateway ``/chat`` route.
-Every authenticated Membership Atlas user can search the complete corpus; the
-legacy access-class metadata is retained only for compatibility with the
-already-ingested knowledge base.
+API Gateway validates Cognito tokens for ``/chat``. The unauthenticated
+``/public-chat`` route can retrieve only public chunks. Signed-in users need
+the ``members`` Cognito group to retrieve member-restricted chunks.
 
 Optional runtime variables:
 
@@ -81,7 +80,7 @@ from membership_rag.session_state import (
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 
-_ACCESS_CLASS_ORDER = ("public", "member_restricted", "configuration")
+_MEMBER_GROUP = "members"
 _SAFE_SCOPE_REDIRECT = (
     "I'm Oriana!!! I'd LOVE to help you explore Membership Atlas or our "
     "cultural events! What sparks your curiosity?"
@@ -434,15 +433,49 @@ def _parse_body(event: Mapping[str, Any]) -> Mapping[str, Any]:
     return parsed
 
 
-def _authenticated_corpus_access() -> tuple[str, ...]:
-    """Return all legacy classes for an authenticated Membership Atlas user.
+def _jwt_claims(event: Mapping[str, Any]) -> Mapping[str, Any]:
+    authorizer = _request_context(event).get("authorizer")
+    jwt = authorizer.get("jwt") if isinstance(authorizer, Mapping) else None
+    claims = jwt.get("claims") if isinstance(jwt, Mapping) else None
+    return claims if isinstance(claims, Mapping) else {}
 
-    API Gateway owns authentication for ``/chat``. The corpus still contains
-    the original access-class metadata, so include every known class until a
-    future ingestion removes that obsolete distinction.
-    """
 
-    return validate_access_classes(_ACCESS_CLASS_ORDER)
+def _member_identity(event: Mapping[str, Any], path: str) -> str | None:
+    """Trust only claims supplied by API Gateway's JWT authorizer."""
+
+    if path != "/chat":
+        return None
+    claims = _jwt_claims(event)
+    subject = claims.get("sub")
+    groups = claims.get("cognito:groups")
+    if not isinstance(subject, str) or not subject:
+        return None
+    if isinstance(groups, str):
+        try:
+            parsed = json.loads(groups)
+        except json.JSONDecodeError:
+            parsed = None
+        groups = (
+            parsed
+            if isinstance(parsed, list)
+            else [part.strip().strip("\"'") for part in groups.strip("[]").split(",")]
+        )
+    if isinstance(groups, list) and _MEMBER_GROUP in groups:
+        return subject
+    return None
+
+
+def _authenticated_corpus_access(
+    event: Mapping[str, Any], path: str
+) -> tuple[str, ...]:
+    if _member_identity(event, path):
+        return validate_access_classes(("public", "member_restricted"))
+    return validate_access_classes(("public",))
+
+
+def _conversation_scope(event: Mapping[str, Any], path: str) -> str:
+    member_identity = _member_identity(event, path)
+    return f"member:{member_identity}" if member_identity else "public"
 
 
 def _serialize_citation(citation: PublicCitation) -> dict[str, Any]:
@@ -515,10 +548,13 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
         return _error_response(
             event, 405, "method_not_allowed", "Use POST /chat.", request_id
         )
-    if path not in ("/", "/chat", "/retrieve"):
+    if path not in ("/", "/chat", "/public-chat", "/retrieve"):
         return _error_response(
             event, 404, "not_found", "The requested endpoint does not exist.", request_id
         )
+
+    access_classes = _authenticated_corpus_access(event, path)
+    conversation_scope = _conversation_scope(event, path)
 
     try:
         body = _parse_body(event)
@@ -564,7 +600,7 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             if secret is None:
                 raise ServiceConfigurationError("conversation state signing is not configured")
             try:
-                history = verify_state(state_token, secret)
+                history = verify_state(state_token, secret, scope=conversation_scope)
             except InvalidConversationState:
                 return _error_response(
                     event,
@@ -622,7 +658,6 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
                 request_id,
             )
 
-        access_classes = _authenticated_corpus_access()
         route = (
             TurnRoute("chat", "")
             if is_simple_utility(query)
@@ -794,7 +829,7 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
                 ],
                 maximum_turns=_history_turn_limit(),
             )
-            new_state = sign_state(updated_history, secret)
+            new_state = sign_state(updated_history, secret, scope=conversation_scope)
         response = _response(
             event,
             200,

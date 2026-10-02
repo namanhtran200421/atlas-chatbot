@@ -10,17 +10,9 @@ export const environment = {
   cognitoUserPoolId: 'ap-southeast-2_79ScAKqng',
   cognitoClientId: '2aj4cq4fv29f73m28ttc3c9n27',
 
-  /**
-   * Membership Atlas RAG endpoint, relative on purpose.
-   *
-   * The upstream API is https://may54zk1a5.execute-api.ap-southeast-2.amazonaws.com/chat,
-   * whose POST /chat route is protected with AWS_IAM — every call must be
-   * SigV4-signed, which a browser cannot do on its own. So the app always talks
-   * to a same-origin /api/chat and whatever serves it does the signing:
-   * tools/aws-proxy.mjs in development, and a Cognito identity pool or a
-   * server-side signer in production. See README.md.
-   */
+  /** Same-origin API routes, forwarded by Vercel in production. */
   chatApiUrl: '/api/chat',
+  publicChatApiUrl: '/api/public-chat',
 
   /** Retrieval breadth. The Lambda caps this at MEMBERSHIP_RAG_MAX_RESULTS (currently 5). */
   numberOfResults: 5,

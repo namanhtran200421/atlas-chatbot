@@ -3,6 +3,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../auth/auth.service';
+import { ChatService } from '../chat/chat.service';
 
 @Component({
   selector: 'app-login',
@@ -13,6 +14,7 @@ import { AuthService } from '../auth/auth.service';
 })
 export class Login {
   private readonly auth = inject(AuthService);
+  private readonly chat = inject(ChatService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -50,6 +52,7 @@ export class Login {
     try {
       const { email, password } = this.form.getRawValue();
       await this.auth.signIn(email.trim(), password);
+      this.chat.reset();
       this.form.controls.password.reset();
 
       const requestedUrl = this.route.snapshot.queryParamMap.get('returnUrl');

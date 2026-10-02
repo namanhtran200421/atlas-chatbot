@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/chat",
+      "destination": "https://may54zk1a5.execute-api.ap-southeast-2.amazonaws.com/chat"
+    },
+    {
+      "source": "/api/public-chat",
+      "destination": "https://may54zk1a5.execute-api.ap-southeast-2.amazonaws.com/public-chat"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

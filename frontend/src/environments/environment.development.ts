@@ -6,6 +6,7 @@ export const environment = {
   cognitoClientId: '2aj4cq4fv29f73m28ttc3c9n27',
   /** Served by tools/aws-proxy.mjs via proxy.conf.json — see README.md. */
   chatApiUrl: '/api/chat',
+  publicChatApiUrl: '/api/public-chat',
   numberOfResults: 5,
   maxQueryLength: 4000,
   requestTimeoutMs: 45_000,
