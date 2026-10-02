@@ -27,9 +27,9 @@ cognitoClientId: '2aj4cq4fv29f73m28ttc3c9n27',
 
 The Cognito app client must have `ALLOW_USER_PASSWORD_AUTH` enabled and must
 not have a client secret. The browser stores the access token in
-`sessionStorage`, protects the chat route, and sends
-`Authorization: Bearer <access-token>` with chat requests. Sign out removes the
-browser session; access tokens are not persisted across tabs.
+`sessionStorage` and sends `Authorization: Bearer <access-token>` with
+signed-in chat requests. Guests can use public chat without signing in. Sign
+out removes the browser session; access tokens are not persisted across tabs.
 
 The `/signup` route creates a Cognito user with the email address as the
 username, then asks for the confirmation code Cognito sends by email. It also
