@@ -1,0 +1,264 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(84, 62, 182, 0.09), transparent 31rem),
+    linear-gradient(145deg, #fff 45%, #f0edff 100%);
+}
+
+.login-page {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+  padding: 24px clamp(22px, 5vw, 80px) 20px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+}
+
+.brand img {
+  display: block;
+  width: clamp(175px, 18vw, 210px);
+  height: auto;
+}
+
+.login-card {
+  align-self: center;
+  justify-self: center;
+  width: min(100%, 470px);
+  margin: 44px 0;
+  padding: clamp(30px, 5vw, 52px);
+  border: 1px solid #e0dceb;
+  border-radius: 42px 0 42px 0;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 28px 80px rgba(50, 39, 99, 0.13);
+}
+
+.intro {
+  margin-bottom: 30px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--purple);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.35rem, 5vw, 3.45rem);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 1.12;
+}
+
+h1 em {
+  font-family: var(--font-display);
+  font-weight: 900;
+}
+
+.intro > p:last-child {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+
+form,
+.field {
+  display: grid;
+}
+
+form {
+  gap: 20px;
+}
+
+.field {
+  gap: 7px;
+}
+
+label {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  height: 50px;
+  padding: 0 15px;
+  border: 1px solid #c9c6d0;
+  border-radius: 13px;
+  outline: 0;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.91rem;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+
+input:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px #e7e1ff;
+}
+
+input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.field-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.75rem;
+}
+
+.auth-error {
+  padding: 11px 13px;
+  border: 1px solid #f0c5c2;
+  border-radius: 11px;
+  background: #fff4f3;
+  color: var(--danger);
+  font-size: 0.79rem;
+  line-height: 1.5;
+}
+
+.auth-status {
+  margin-bottom: 20px;
+  padding: 11px 13px;
+  border: 1px solid #b9dec8;
+  border-radius: 11px;
+  background: #f0faf4;
+  color: #24643d;
+  font-size: 0.79rem;
+  line-height: 1.5;
+}
+
+button {
+  min-height: 50px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    transform 0.18s;
+}
+
+button span {
+  margin-left: 7px;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--purple);
+  background: var(--purple);
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.48;
+}
+
+.privacy,
+.support {
+  color: var(--muted);
+  font-size: 0.68rem;
+  text-align: center;
+}
+
+.privacy {
+  margin: 20px 0 0;
+  line-height: 1.55;
+}
+
+.auth-switch {
+  margin: 13px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.auth-switch a,
+.text-action {
+  color: var(--purple);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.auth-switch a:hover,
+.text-action:hover {
+  text-decoration: underline;
+}
+
+.confirmation-address {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.field-hint,
+.resend-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.resend-status {
+  margin-top: -6px;
+  text-align: center;
+}
+
+.secondary-action {
+  min-height: 42px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+.secondary-action:hover:not(:disabled) {
+  border-color: #ded9eb;
+  background: #f7f5fc;
+  color: var(--ink);
+  transform: none;
+}
+
+.text-action {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: inherit;
+}
+
+.text-action:hover:not(:disabled) {
+  border: 0;
+  background: transparent;
+  color: var(--purple);
+  transform: none;
+}
+
+.support {
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .login-page {
+    padding: 19px 16px 16px;
+  }
+
+  .login-card {
+    margin: 30px 0;
+    padding: 30px 22px;
+    border-radius: 31px 0 31px 0;
+  }
+}

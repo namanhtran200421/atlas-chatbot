@@ -1,0 +1,12 @@
+{
+  "type": "MANAGED",
+  "managedKnowledgeBaseConfiguration": {
+    "embeddingModelType": "CUSTOM",
+    "embeddingModelArn": "arn:aws:bedrock:ap-southeast-2::foundation-model/amazon.titan-embed-text-v2:0",
+    "embeddingModelConfiguration": {
+      "bedrockEmbeddingModelConfiguration": {
+        "dimensions": 1024
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "MANAGED_KNOWLEDGE_BASE_CONNECTOR",
+  "managedKnowledgeBaseConnectorConfiguration": {
+    "connectorParameters": {
+      "type": "S3",
+      "version": "1",
+      "connectionConfiguration": {
+        "bucketName": "atlas-membership-knowledge-base-fetching",
+        "bucketOwnerAccountId": "520021117470"
+      },
+      "filterConfiguration": {
+        "inclusionPrefixes": [
+          "rag/bedrock/96a5eddb11a01ff5/"
+        ]
+      }
+    }
+  }
+}

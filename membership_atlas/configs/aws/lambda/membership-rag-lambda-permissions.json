@@ -1,0 +1,21 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "RetrieveMembershipKnowledgeBase",
+      "Effect": "Allow",
+      "Action": "bedrock:Retrieve",
+      "Resource": "arn:aws:bedrock:ap-southeast-2:520021117470:knowledge-base/MZGQMUBUL9"
+    },
+    {
+      "Sid": "GenerateMembershipAnswers",
+      "Effect": "Allow",
+      "Action": "bedrock:InvokeModel",
+      "Resource": [
+        "arn:aws:bedrock:ap-southeast-2::foundation-model/amazon.nova-micro-v1:0",
+        "arn:aws:bedrock:ap-southeast-2::foundation-model/amazon.nova-lite-v1:0",
+        "arn:aws:bedrock:ap-southeast-2::foundation-model/amazon.nova-pro-v1:0"
+      ]
+    }
+  ]
+}

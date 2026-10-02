@@ -1,0 +1,14 @@
+{
+  "minimum_total_cases": 60,
+  "minimum_answerable_cases": 30,
+  "minimum_unanswerable_cases": 20,
+  "minimum_hit_at_1": 0.90,
+  "minimum_hit_at_5": 0.95,
+  "minimum_mrr": 0.90,
+  "minimum_ndcg_at_5": 0.90,
+  "minimum_abstention_rate": 1.0,
+  "maximum_p95_latency_ms": 1000.0,
+  "maximum_request_errors": 0,
+  "maximum_acl_leakage": 0,
+  "maximum_metadata_errors": 0
+}

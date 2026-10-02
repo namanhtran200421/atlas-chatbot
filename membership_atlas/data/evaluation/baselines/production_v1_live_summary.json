@@ -1,0 +1,25 @@
+{
+  "evaluated_at": "2026-09-20T00:31:58Z",
+  "knowledge_base_id": "MZGQMUBUL9",
+  "region": "ap-southeast-2",
+  "dataset": "retrieval_cases_production_v1.jsonl",
+  "dataset_sha256": "423b4993ea4bb7094f089023625840cccb7d06f4c3336c73670615bec3debb02",
+  "thresholds_sha256": "ca6a0d287f52b196a94105ab5fc1ce8f68cea3a65e9144d337b0458c88a2cd9a",
+  "git_base_commit": "4fc246333ab78f2e30ee8f83c000907e6412af28",
+  "passed": true,
+  "metrics": {
+    "total_cases": 63,
+    "answerable_cases": 38,
+    "unanswerable_cases": 25,
+    "hit_at_1": 0.9473684210526315,
+    "hit_at_5": 1.0,
+    "mrr": 0.9692982456140351,
+    "ndcg_at_5": 0.9669493933246557,
+    "abstention_rate": 1.0,
+    "p50_latency_ms": 517.8486460354179,
+    "p95_latency_ms": 631.6741000395268,
+    "request_errors": 0,
+    "acl_leakage": 0,
+    "metadata_errors": 0
+  }
+}

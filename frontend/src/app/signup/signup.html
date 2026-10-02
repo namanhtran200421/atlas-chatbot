@@ -1,0 +1,163 @@
+<main class="login-page">
+  <a
+    class="brand"
+    href="https://atlas.culturalinfusion.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Cultural Infusion Atlas website"
+  >
+    <img src="atlas-logo.svg" alt="Cultural Infusion Atlas" />
+  </a>
+
+  <section class="login-card" aria-labelledby="signup-title">
+    @if (confirmationEmail()) {
+      <div class="intro">
+        <p class="eyebrow">MEMBERSHIP ATLAS</p>
+        <h1 id="signup-title">Check your <em>email.</em></h1>
+        <p>
+          Enter the confirmation code sent to
+          <span class="confirmation-address">{{ deliveryDestination() }}</span
+          >.
+        </p>
+      </div>
+
+      <form [formGroup]="confirmationForm" novalidate (ngSubmit)="confirm()">
+        <div class="field">
+          <label for="confirmation-code">Confirmation code</label>
+          <input
+            id="confirmation-code"
+            type="text"
+            formControlName="code"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            placeholder="Enter the code"
+            [attr.aria-invalid]="
+              confirmationForm.controls.code.invalid && confirmationForm.controls.code.touched
+            "
+          />
+          @if (confirmationForm.controls.code.invalid && confirmationForm.controls.code.touched) {
+            <p class="field-error">Enter the code from your email.</p>
+          }
+        </div>
+
+        @if (errorMessage()) {
+          <div class="auth-error" role="alert" aria-live="polite">{{ errorMessage() }}</div>
+        }
+        @if (resendMessage()) {
+          <p class="resend-status" role="status">{{ resendMessage() }}</p>
+        }
+
+        <button
+          type="submit"
+          [disabled]="confirmationForm.invalid || isSubmitting() || isResending()"
+        >
+          @if (isSubmitting()) {
+            Confirming&hellip;
+          } @else {
+            Confirm account <span aria-hidden="true">&nearr;</span>
+          }
+        </button>
+        <button
+          class="secondary-action"
+          type="button"
+          [disabled]="isSubmitting() || isResending()"
+          (click)="resendCode()"
+        >
+          {{ isResending() ? 'Sending a new code…' : 'Resend code' }}
+        </button>
+      </form>
+
+      <p class="auth-switch">
+        Wrong email?
+        <button class="text-action" type="button" (click)="changeEmail()">Start again</button>
+      </p>
+    } @else {
+      <div class="intro">
+        <p class="eyebrow">MEMBERSHIP ATLAS</p>
+        <h1 id="signup-title">Create your <em>account.</em></h1>
+        <p>Sign up with your email address, then confirm it using the code Cognito sends you.</p>
+      </div>
+
+      <form [formGroup]="detailsForm" novalidate (ngSubmit)="signUp()">
+        <div class="field">
+          <label for="email">Email address</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            autocomplete="username"
+            inputmode="email"
+            placeholder="you@example.com"
+            [attr.aria-invalid]="
+              detailsForm.controls.email.invalid && detailsForm.controls.email.touched
+            "
+          />
+          @if (detailsForm.controls.email.invalid && detailsForm.controls.email.touched) {
+            <p class="field-error">Enter a valid email address.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            autocomplete="new-password"
+            placeholder="Choose a password"
+            [attr.aria-invalid]="
+              detailsForm.controls.password.invalid && detailsForm.controls.password.touched
+            "
+          />
+          <p class="field-hint">Your password must meet the user pool's Cognito password policy.</p>
+          @if (detailsForm.controls.password.invalid && detailsForm.controls.password.touched) {
+            <p class="field-error">Enter a password.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="confirm-password">Confirm password</label>
+          <input
+            id="confirm-password"
+            type="password"
+            formControlName="confirmPassword"
+            autocomplete="new-password"
+            placeholder="Enter it again"
+            [attr.aria-invalid]="passwordsDiffer() && detailsForm.controls.confirmPassword.touched"
+          />
+          @if (passwordsDiffer() && detailsForm.controls.confirmPassword.touched) {
+            <p class="field-error">The passwords do not match.</p>
+          }
+        </div>
+
+        @if (errorMessage()) {
+          <div class="auth-error" role="alert" aria-live="polite">{{ errorMessage() }}</div>
+        }
+
+        <button
+          type="submit"
+          [disabled]="detailsForm.invalid || passwordsDiffer() || isSubmitting()"
+        >
+          @if (isSubmitting()) {
+            Creating account&hellip;
+          } @else {
+            Create account <span aria-hidden="true">&nearr;</span>
+          }
+        </button>
+      </form>
+
+      <p class="privacy">
+        Your password is sent directly to Amazon Cognito and is never stored by this page.
+      </p>
+      <p class="auth-switch">
+        Already have a code?
+        <button class="text-action" type="button" (click)="useExistingCode()">
+          Confirm your account
+        </button>
+      </p>
+      <p class="auth-switch">Already have an account? <a routerLink="/login">Sign in</a></p>
+    }
+  </section>
+
+  <p class="support">Having trouble signing up? Contact your Membership Atlas administrator.</p>
+</main>

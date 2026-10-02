@@ -1,0 +1,158 @@
+<div class="shell">
+  <header class="site-header">
+    <a
+      class="brand"
+      href="https://atlas.culturalinfusion.com/"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Cultural Infusion Atlas website"
+    >
+      <img src="atlas-logo.svg" alt="Cultural Infusion Atlas" />
+    </a>
+    <div class="header-actions">
+      <span class="account-email" [title]="auth.email()">{{ auth.email() }}</span>
+      <button type="button" class="new-chat" (click)="newChat()" [disabled]="chat.isSending()">
+        New chat 
+      </button>
+      <button type="button" class="sign-out" (click)="signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <section
+      #scroller
+      class="conversation"
+      (scroll)="onScroll()"
+      aria-live="polite"
+      aria-label="Conversation with Oriana"
+    >
+      <div class="content">
+        @if (chat.isEmpty()) {
+          <div class="hero">
+            <p class="eyebrow">YOUR MEMBERSHIP ATLAS ASSISTANT</p>
+            <h1><em>Ask</em> Oriana <em>anything.</em></h1>
+            <p class="hero-copy">
+              Curious about membership, cultures or events? Start with a question and let’s explore.
+            </p>
+          </div>
+        } @else {
+          <div class="thread-heading">
+            <p class="eyebrow">A CONVERSATION WITH ORIANA</p>
+            <h1><em>Let's</em> explore.</h1>
+          </div>
+        }
+
+        <div class="chat-panel" [class.is-empty]="chat.isEmpty()">
+          @if (chat.isEmpty()) {
+            <div class="panel-intro">
+              <p class="panel-kicker">A PLACE TO BEGIN</p>
+              <h2>What would you like to know?</h2>
+              <p>Choose a question or ask your own below.</p>
+            </div>
+            <div class="suggestions" aria-label="Suggested questions">
+              @for (prompt of suggestions; track prompt) {
+                <button
+                  type="button"
+                  class="suggestion"
+                  (click)="ask(prompt)"
+                  [disabled]="chat.isSending()"
+                >
+                  <span>{{ prompt }}</span
+                  ><span aria-hidden="true">↗</span>
+                </button>
+              }
+            </div>
+          }
+
+          @for (message of chat.messages(); track message.id) {
+            @if (!message.isIntro) {
+              <article
+                class="row"
+                [class.user]="message.role === 'user'"
+                [class.failed]="message.status === 'error'"
+              >
+                <div class="bubble-wrap">
+                  <p class="who">{{ message.role === 'user' ? 'You' : 'Oriana' }}</p>
+                  @if (message.status === 'pending') {
+                    <div class="bubble thinking" aria-label="Oriana is thinking">
+                      <span>Thinking</span
+                      ><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    </div>
+                  } @else if (message.role === 'user') {
+                    <div class="bubble">{{ message.content }}</div>
+                  } @else {
+                    <div class="bubble">
+                      <div class="prose" [innerHTML]="message.content | markdown"></div>
+                      @if (message.citations?.length) {
+                        <div class="sources">
+                          <p class="sources-label">Sources</p>
+                          <ul>
+                            @for (citation of message.citations; track citation.url) {
+                              <li>
+                                <a [href]="citation.url" target="_blank" rel="noopener noreferrer"
+                                  ><span>{{ citation.title || citation.url }}</span
+                                  ><span aria-hidden="true">↗</span></a
+                                >
+                              </li>
+                            }
+                          </ul>
+                        </div>
+                      }
+                    </div>
+                    <div class="actions">
+                      @if (message.status === 'error') {
+                        <button
+                          type="button"
+                          class="text-action"
+                          (click)="retry(message.id)"
+                          [disabled]="chat.isSending()"
+                        >
+                          Try again ↗
+                        </button>
+                      } @else {
+                        <button
+                          type="button"
+                          class="text-action"
+                          (click)="copy(message.id, message.content)"
+                        >
+                          {{ copiedId() === message.id ? 'Copied!' : 'Copy answer' }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              </article>
+            }
+          }
+        </div>
+      </div>
+    </section>
+
+    <div class="composer-area">
+      @if (!atBottom() && !chat.isEmpty()) {
+        <button type="button" class="jump" (click)="scrollToLatest()">↓ Latest message</button>
+      }
+      <form class="composer" novalidate (submit)="$event.preventDefault(); send()">
+        <label for="composer-input">Your question</label>
+        <div class="composer-row">
+          <textarea
+            #input
+            id="composer-input"
+            rows="1"
+            placeholder="Ask Oriana a question..."
+            autocomplete="off"
+            enterkeyhint="send"
+            [attr.maxlength]="maxQueryLength"
+            [value]="draft()"
+            (input)="onInput($event)"
+            (keydown)="onKeydown($event)"
+          ></textarea>
+          <button type="submit" class="send" [disabled]="!draft().trim() || chat.isSending()">
+            Send <span aria-hidden="true">↗</span>
+          </button>
+        </div>
+      </form>
+      <p class="note">Each question stands on its own. Oriana can't see earlier turns.</p>
+    </div>
+  </main>
+</div>

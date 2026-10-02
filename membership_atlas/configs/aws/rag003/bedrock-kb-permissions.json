@@ -1,0 +1,54 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListBedrockModels",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:ListFoundationModels",
+        "bedrock:ListCustomModels"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "InvokeTitanEmbeddingModel",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:ap-southeast-2::foundation-model/amazon.titan-embed-text-v2:0"
+      ]
+    },
+    {
+      "Sid": "ListMembershipRagBucket",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::atlas-membership-knowledge-base-fetching"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceAccount": "520021117470"
+        }
+      }
+    },
+    {
+      "Sid": "ReadMembershipRagObjects",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::atlas-membership-knowledge-base-fetching/rag/bedrock/96a5eddb11a01ff5/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceAccount": "520021117470"
+        }
+      }
+    }
+  ]
+}

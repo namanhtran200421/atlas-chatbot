@@ -1,0 +1,20 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "bedrock.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceAccount": "520021117470"
+        },
+        "ArnLike": {
+          "AWS:SourceArn": "arn:aws:bedrock:ap-southeast-2:520021117470:knowledge-base/*"
+        }
+      }
+    }
+  ]
+}

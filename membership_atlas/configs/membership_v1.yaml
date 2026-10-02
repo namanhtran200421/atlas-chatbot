@@ -1,0 +1,38 @@
+config_version: "rag-v1"
+
+aws:
+  region: "ap-southeast-2"
+
+corpus:
+  version: "membership-v1"
+  s3_uri: "s3://YOUR-BUCKET/YOUR-CLEANED-PREFIX/"
+
+chunking:
+  version: "chunk-v1"
+  strategy: "FIXED_SIZE"
+  max_tokens: 512
+  overlap_percentage: 20
+
+metadata_schema_version: "metadata-v1"
+
+embedding:
+  model_id: "amazon.titan-embed-text-v2:0"
+  dimensions: 1024
+  data_type: "FLOAT32"
+
+retrieval:
+  search_type: "SEMANTIC"
+  candidate_k: 20
+
+reranker:
+  enabled: false
+  model_arn: null
+  final_k: null
+
+generation:
+  enabled: false
+  model_arn: null
+  context_token_budget: null
+  prompt_version: null
+
+evaluation_dataset_version: null
